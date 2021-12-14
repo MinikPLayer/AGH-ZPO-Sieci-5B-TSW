@@ -4,7 +4,9 @@ project(new_project VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-file(GLOB TARGET_SRC "./src/*.cpp" )
+include_directories("./include")
+include_directories("./test")
+file(GLOB TARGET_SRC "./src/*.cpp" "./test/*.cpp" )
 
 add_executable(main ${TARGET_SRC})
 
