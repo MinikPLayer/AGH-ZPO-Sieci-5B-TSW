@@ -1,6 +1,5 @@
 #pragma once
-
-using ElementID = int;
+#include "types.hpp"
 
 class Package
 {
