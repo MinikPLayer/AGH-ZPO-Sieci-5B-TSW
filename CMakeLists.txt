@@ -6,7 +6,7 @@ enable_testing()
 
 include_directories("./include")
 include_directories("./test")
-file(GLOB TARGET_SRC "./src/*.cpp" "./test/*.cpp" )
+file(GLOB TARGET_SRC "./src/*.cpp" "./test/*.cpp" "*.cpp" )
 
 add_executable(main ${TARGET_SRC})
 
