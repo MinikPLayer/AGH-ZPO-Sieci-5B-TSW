@@ -11,11 +11,9 @@ void utest_all()
     cout << "[Test start]" << endl;
 
     PackageQueue queue(PackageQueueType::LIFO);
-    Package p(1);
-    Package p2(2);
 
-    queue.push(p);
-    queue.push(p2);
+    queue.push(Package(1));
+    queue.push(Package(2));
 
     auto ret1 = queue.pop();
     auto ret2 = queue.pop();

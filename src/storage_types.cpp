@@ -2,7 +2,7 @@
 #include "storage_types.hpp"
 #include <stdexcept>
 
-void IPackageStockpile::push(Package& p)
+void IPackageStockpile::push(Package&& p)
 {
     pile.push_back(p);
 }
