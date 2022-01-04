@@ -16,7 +16,7 @@ protected:
     vector<Package> pile;
 
 public:
-    void push(Package& p);
+    void push(Package&& p);
     bool empty();
     size_t size();
 };
