@@ -33,79 +33,79 @@ void Factory::do_work(Time t)
 // Ramp
 void Factory::add_ramp(Ramp&& r)
 {
-    throw std::exception();
+    rampCollection.add(std::move(r));
 }
 
 void Factory::remove_ramp(ElementID id)
 {
-    throw std::exception();
+    rampCollection.remove_by_id(id);
 }
 
 NodeCollection<Ramp>::iterator Factory::find_ramp_by_id(ElementID id)
 {
-    throw std::exception();
+    return rampCollection.find_by_id(id);
 }
 
 NodeCollection<Ramp>::const_iterator Factory::ramp_cbegin()
 {
-    throw std::exception();
+    return rampCollection.begin();
 }
 
 NodeCollection<Ramp>::const_iterator Factory::ramp_cend()
 {
-    throw std::exception();
+    return rampCollection.end();
 }
 
 // Worker
 void Factory::add_worker(Worker&& w)
 {
-    throw std::exception();
+    workerCollection.add(std::move(w));
 }
 
 void Factory::remove_worker(ElementID id)
 {
-    throw std::exception();
+    workerCollection.remove_by_id(id);
 }
 
 NodeCollection<Worker>::iterator Factory::find_worker_by_id(ElementID id)
 {
-    throw std::exception();
+    return workerCollection.find_by_id(id);
 }
 
 NodeCollection<Worker>::const_iterator Factory::worker_cbegin()
 {
-    throw std::exception();
+    return workerCollection.begin();
 }
 
 NodeCollection<Worker>::const_iterator Factory::worker_cend()
 {
-    throw std::exception();
+    return workerCollection.end();
 }
 
 // Storehouse
 void Factory::add_storehouse(Storehouse&& s)
 {
-    throw std::exception();
+    storehouseCollection.add(std::move(s));
 }
 
 void Factory::remove_storehouse(ElementID id)
 {
-    throw std::exception();
+    storehouseCollection.remove_by_id(id);
 }
 
 NodeCollection<Storehouse>::iterator Factory::find_storehouse_by_id(ElementID id)
 {
-    throw std::exception();
+    return storehouseCollection.find_by_id(id);
 }
 
 NodeCollection<Storehouse>::const_iterator Factory::storehouse_cbegin()
 {
-    throw std::exception();
+    return storehouseCollection.begin();
 }
 
 NodeCollection<Storehouse>::const_iterator Factory::storehouse_cend()
 {
-    throw std::exception();
+    return storehouseCollection.end();
 }
 
 #pragma endregion

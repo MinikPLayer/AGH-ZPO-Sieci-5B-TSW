@@ -34,12 +34,15 @@ public:
     ReceiverPreferences(ProbabilityGenerator pg);
     ReceiverPreferences();
 
-    ReceiverPreferences::iterator begin() {return preferences.begin();}
-
     void add_receiver(IPackageReceiver* r);
     void remove_receiver(IPackageReceiver* r);
     IPackageReceiver* choose_receiver(void);
     preferences_t& get_preferences(void);
+
+    iterator begin() { return preferences.begin(); }
+    iterator end() { return preferences.end(); }
+    const_iterator cbegin() { return preferences.cbegin(); }
+    const_iterator cend() { return preferences.cend(); }
 };
 
 class PackageSender
@@ -51,7 +54,6 @@ public:
     ReceiverPreferences receiver_preferences_;
 
     PackageSender() {}
-    PackageSender(PackageSender&&);
     void send_package(void);
     std::optional<Package>& get_sending_buffer(void);
 };
@@ -70,7 +72,6 @@ class Ramp : public PackageSender
     ElementID id;
     TimeOffset offset;
 public:
-    Ramp(const Ramp& r) {this->id = r.id; this->offset = r.offset;}
     Ramp(ElementID id, TimeOffset di) {this->id = id; this->offset = di;}
     void deliver_goods(Time t);
     TimeOffset get_delivery_interval(void);
@@ -81,10 +82,9 @@ public:
 class Worker : public PackageSender, public IPackageReceiver
 {
     TimeOffset offset;
-    std::unique_ptr<IPackageQueue> q;
 public:
     Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q)
-        { this->id = id; this->offset = pd; this->q.reset(q.get());}
+        { this->id = id; this->offset = pd;}
 
     void do_work(Time t);
     TimeOffset get_processing_duration(void);
