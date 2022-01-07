@@ -10,11 +10,36 @@ public:
     using container_t = typename std::vector<T>;
     using iterator = typename container_t::iterator;
     using const_iterator = typename container_t::const_iterator;
+
+private:
+    container_t collection;
+public:
     
-    void add(T&& node);
-    void remove_by_id(ElementID id);
-    NodeCollection<T>::iterator find_by_id(ElementID id);
-    //iteratory
+    NodeCollection<T>::iterator begin() {return collection.begin();}
+    NodeCollection<T>::iterator end() {return collection.end();}
+
+    void add(T&& node) {collection.push_back(node);}
+    
+    NodeCollection<T>::iterator find_by_id(ElementID id)
+    {
+        for(auto it = begin(); it < end(); it++)
+        {
+            auto el = *it;
+            auto tId = el.get_id();
+
+            if(tId == id)
+                return it;
+        }
+
+        // Element not found
+        throw;
+    }
+
+    void remove_by_id(ElementID id)
+    {
+        auto it = find_by_id(id);
+        collection.erase(it);
+    }
 };
 
 class Factory
@@ -23,11 +48,15 @@ private:
     template<class T>
     void remove_receiver(NodeCollection<T>& collection, ElementID id);
 
+    NodeCollection<Ramp> rampCollection;
+    NodeCollection<Worker> workerCollection;
+    NodeCollection<Storehouse> storehouseCollection;
+
 public:
-    bool is_consistent(void);
-    void do_deliveries(Time);
-    void do_package_passing(void);
-    void do_work(Time);
+    bool is_consistent();
+    void do_deliveries(Time t);
+    void do_package_passing();
+    void do_work(Time t);
 
     void add_ramp(Ramp&&);
     void remove_ramp(ElementID id);
