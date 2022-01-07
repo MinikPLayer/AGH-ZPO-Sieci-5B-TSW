@@ -2,12 +2,16 @@
 #pragma once
 
 #include "helpers.hpp"
+#include "storage_types.hpp"
+#include <map>
+#include <optional>
+#include <memory>
 
 class IPackageReceiver
 {
 public:
-    virtual void receive_package(Package&& p);
-    virtual ElementID get_id(void);
+    virtual void receive_package(Package&& p) {}
+    virtual ElementID get_id() {return ElementID(-1);}
 
     //poniższy kod wymaga zainkludowania pliku "config.hpp"
     //#if (defined EXERCISE_ID && EXERCISE_ID != EXERCISE_ID_NODES)
@@ -21,7 +25,7 @@ class ReceiverPreferences
     using const_iterator = preferences_t::const_iterator;
 
 public:
-    preferences_t;
+    preferences_t preferences;
 
     ReceiverPreferences(ProbabilityGenerator pg);
     void add_receiver(IPackageReceiver* r);
@@ -30,7 +34,7 @@ public:
     preferences_t& get_preferences(void);
 };
 
-class PackageSender : public ReceiverPreferences
+class PackageSender
 {
 protected:
     void push_package(Package&&);
@@ -43,7 +47,7 @@ public:
     std::optional<Package>& get_sending_buffer(void);
 };
 
-class Storehouse
+class Storehouse : IPackageReceiver
 {
 public:
     Storehouse(ElementID id, std::unique_ptr<IPackageStockpile> d);
@@ -52,16 +56,16 @@ public:
 class Ramp : public PackageSender
 {
 public:
-    void Ramp(ElementID id, TimeOffset di);
+    Ramp(ElementID id, TimeOffset di);
     void deliver_goods(Time t);
     TimeOffset get_delivery_interval(void);
     ElementID get_id(void);
 };
 
-class Worker : public PackageSender
+class Worker : public PackageSender, IPackageReceiver
 {
 public:
-    void Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q);
+    Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q);
     void do_work(Time t);
     TimeOffset get_processing_duration(void);
     Time get_package_processing_start_time(void);
