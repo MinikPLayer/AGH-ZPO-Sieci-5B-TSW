@@ -13,8 +13,13 @@ enum class PackageQueueType
 
 class IPackageStockpile
 {
+public:
+    using container_t = typename std::vector<Package>;
+    using iterator = typename container_t::iterator;
+    using const_iterator = typename container_t::const_iterator;
+
 protected:
-    vector<Package> pile;
+    container_t pile;
 
 public:
     void push(Package&& p);

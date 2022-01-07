@@ -22,12 +22,17 @@ public:
 class ReceiverPreferences
 {
     using preferences_t = std::map<IPackageReceiver*, double>;
+    using iterator = preferences_t::iterator;
     using const_iterator = preferences_t::const_iterator;
 
 public:
     preferences_t preferences;
 
     ReceiverPreferences(ProbabilityGenerator pg);
+    ReceiverPreferences();
+
+    ReceiverPreferences::iterator begin();
+
     void add_receiver(IPackageReceiver* r);
     void remove_receiver(IPackageReceiver* r);
     IPackageReceiver* choose_receiver(void);
@@ -47,10 +52,11 @@ public:
     std::optional<Package>& get_sending_buffer(void);
 };
 
-class Storehouse : IPackageReceiver
+class Storehouse : public IPackageReceiver
 {
 public:
     Storehouse(ElementID id, std::unique_ptr<IPackageStockpile> d);
+    Storehouse(ElementID id);
 };
 
 class Ramp : public PackageSender
@@ -62,7 +68,7 @@ public:
     ElementID get_id(void);
 };
 
-class Worker : public PackageSender, IPackageReceiver
+class Worker : public PackageSender, public IPackageReceiver
 {
 public:
     Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q);
