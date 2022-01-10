@@ -68,7 +68,7 @@ bool Factory::is_consistent()
             if(!has_reachable_storehouse(dynamic_cast<PackageSender*>(it), statuses))
                 return false;
     }
-    catch(const DExcept e)
+    catch(const DExcept&)
     {
         return false;
     }
@@ -96,8 +96,6 @@ void Factory::do_work(Time t)
     for(auto i = workerCollection.begin(); i < workerCollection.end(); i++) 
         i->do_work(t);
 }
-
-#pragma region Add or Remove
 
 // Ramp
 void Factory::add_ramp(Ramp&& r)
@@ -176,5 +174,3 @@ NodeCollection<Storehouse>::const_iterator Factory::storehouse_cend()
 {
     return storehouseCollection.end();
 }
-
-#pragma endregion

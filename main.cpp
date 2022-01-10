@@ -26,6 +26,8 @@ void test()
     auto& buffer = w.get_sending_buffer();
 
     cout << "T" << endl;
+
+    cout << &(buffer) << endl;
 }
 
 int main() {

@@ -18,7 +18,7 @@ class IPackageReceiver
 protected:
     ElementID id;
 public:
-    virtual void receive_package(Package&& p) {}
+    virtual void receive_package(Package&&) {}
     virtual ElementID get_id() {return id;}
     virtual ElementID get_id() const {return id;}
     // do sprawdzenia

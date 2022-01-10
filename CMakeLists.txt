@@ -8,6 +8,8 @@ include_directories("./include")
 include_directories("./test")
 file(GLOB TARGET_SRC "./src/*.cpp" "./test/*.cpp" "*.cpp" )
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror")
+
 add_executable(main ${TARGET_SRC})
 
 
