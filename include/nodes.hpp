@@ -7,6 +7,12 @@
 #include <optional>
 #include <memory>
 
+enum class ReceiverType
+{
+    WORKER,
+    STOREHOUSE
+};
+
 class IPackageReceiver
 {
 protected:
@@ -14,8 +20,9 @@ protected:
 public:
     virtual void receive_package(Package&& p) {}
     virtual ElementID get_id() {return id;}
+    virtual ElementID get_id() const {return id;}
     // do sprawdzenia
-    virtual ReceiverType get_receiver_type(void);
+    virtual ReceiverType get_receiver_type(void) {return ReceiverType::WORKER;}
 
 };
 
@@ -45,52 +52,69 @@ public:
 
 class PackageSender
 {
+    std::optional<Package> opt_ = std::nullopt;
+
 protected:
     void push_package(Package&&);
 
 public:
     ReceiverPreferences receiver_preferences_;
 
-    PackageSender() {}
+    PackageSender(): receiver_preferences_(default_probability_generator) {}
+    PackageSender(const PackageSender&) = default;
+    PackageSender(PackageSender&&) = default;
+
+    PackageSender& operator=(PackageSender& p) = default;
+    PackageSender& operator=(PackageSender&& p) = default;
+
     void send_package(void);
     std::optional<Package>& get_sending_buffer(void);
 };
 
 class Storehouse : public IPackageReceiver
 {
+    std::unique_ptr<IPackageQueue> queue;
+
 public:
-    Storehouse(ElementID id, std::unique_ptr<IPackageStockpile> d = nullptr)
+    Storehouse(ElementID id, std::unique_ptr<IPackageQueue> d = nullptr)
     {
         this->id = id;
+        if(d == nullptr)
+        {
+            d = std::make_unique<PackageQueue>(PackageQueueType::FIFO);
+        }
+        this->queue = std::move(d);
     }
+
+    void receive_package(Package&& p) override;
 };
 
 class Ramp : public PackageSender
 {
     ElementID id;
     TimeOffset offset;
+    Time d_t;
 public:
-    Ramp(ElementID id, TimeOffset di) {this->id = id; this->offset = di;}
-    void deliver_goods(Time t);
-    TimeOffset get_delivery_interval(void);
+    Ramp(ElementID id, TimeOffset di) : id(id), offset(di), d_t(0) {}
 
-    ElementID get_id() {return id;}
+    void deliver_goods(Time t);
+    TimeOffset get_delivery_interval() {return offset;}
+
+    ElementID get_id() const {return id;}
 };
 
 class Worker : public PackageSender, public IPackageReceiver
 {
     TimeOffset offset;
+    Time start_time;
+    std::unique_ptr<IPackageQueue> queue;
+    std::optional<Package> cur_package;
 public:
-    Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q)
-        { this->id = id; this->offset = pd;}
+    Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q);
+
+    void receive_package(Package &&p) override;
 
     void do_work(Time t);
     TimeOffset get_processing_duration(void);
     Time get_package_processing_start_time(void);
-};
-
-enum class ReceiverType
-{
-    WORKER,
-    STOREHOUSE
 };

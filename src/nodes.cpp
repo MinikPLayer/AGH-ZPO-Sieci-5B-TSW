@@ -1,5 +1,15 @@
 // 5B: Tomecki (408146), Sztefko (407388), Walawski (406822)
 #include "nodes.hpp"
+#include <stdexcept>
+
+Worker::Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q)
+{
+    PackageSender();
+    this->id = id;
+    this->offset = pd;
+    this->queue = std::move(q);
+    this->start_time = 0;
+}
 
 ReceiverPreferences::ReceiverPreferences(ProbabilityGenerator pg)
 {
@@ -7,23 +17,40 @@ ReceiverPreferences::ReceiverPreferences(ProbabilityGenerator pg)
 }
 
 ReceiverPreferences::ReceiverPreferences()
-{
-    ProbabilityGenerator(default_probability_generator());
-}
+    :gen(default_probability_generator) {}
 
 void ReceiverPreferences::add_receiver(IPackageReceiver* r)
 {
-    throw exception();
+    preferences.insert(std::pair<IPackageReceiver*,double>(r, 1.0/(preferences.size())));
+    for(auto i = preferences.begin(); i != preferences.end(); i++)
+    {
+        i->second = double(1.0/(preferences.size()));
+    }
 }
 
 void ReceiverPreferences::remove_receiver(IPackageReceiver* r)
 {
-    throw exception();
+    preferences.erase(r);
+    for(auto i = preferences.begin(); i != preferences.end(); i++)
+    {
+        i->second = double(1/(preferences.size()));
+    }
 }
 
 IPackageReceiver* ReceiverPreferences::choose_receiver()
 {
-    throw exception();
+    double lottery = gen();
+    for(auto i = preferences.begin(); i!=preferences.end(); i++){
+        if (lottery < i->second)
+        {
+            return i->first;
+        }
+        else
+        {
+            lottery -= i->second;
+        }
+    }
+    throw std::invalid_argument("reached end of function choose_receiver: probably empty list");
 }
 
 ReceiverPreferences::preferences_t& ReceiverPreferences::get_preferences()
@@ -38,7 +65,9 @@ void PackageSender::push_package(Package&& p)
 
 void PackageSender::send_package()
 {
-    throw exception();  
+    IPackageReceiver* package_receiver = receiver_preferences_.choose_receiver();
+    package_receiver->receive_package(std::move(opt_.value()));
+    opt_.reset();
 }
 
 std::optional<Package>& PackageSender::get_sending_buffer()
@@ -48,25 +77,51 @@ std::optional<Package>& PackageSender::get_sending_buffer()
 
 void Ramp::deliver_goods(Time t)
 {
-    throw exception();  
-}
-
-TimeOffset Ramp::get_delivery_interval()
-{
-    throw exception();  
+    push_package(Package());
+    if(d_t + offset <= t)
+    {
+        send_package();
+        d_t = t;
+    }
 }
 
 void Worker::do_work(Time t)
 {
-    throw exception();  
+    if(!cur_package && queue)
+    {
+        cur_package.emplace(queue->pop());
+        start_time = t;
+    }
+    if(cur_package && t + 1 - start_time >= offset)
+    {
+        push_package(std::move(cur_package.value()));
+        cur_package.reset();
+        start_time = 0;
+    }
+}
+
+void Worker::receive_package(Package &&p) {
+    if(get_sending_buffer())
+    {
+        queue->push(std::move(p));
+    }
+    else
+    {
+        queue->push(std::move(p));
+        push_package(queue->pop());
+    }
 }
 
 TimeOffset Worker::get_processing_duration()
 {
-    throw exception();  
+    return offset;
 }
 
 Time Worker::get_package_processing_start_time()
 {
-    throw exception();  
+    return start_time;
+}
+
+void Storehouse::receive_package(Package &&p) {
+    queue-> push(std::move(p));
 }

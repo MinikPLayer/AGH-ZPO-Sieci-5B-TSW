@@ -15,12 +15,27 @@ private:
     container_t collection;
 public:
     
+    NodeCollection() {}
+    NodeCollection(container_t c): collection(c) {}
+
     NodeCollection<T>::iterator begin() {return collection.begin();}
     NodeCollection<T>::iterator end() {return collection.end();}
 
-    void add(T&& node) {collection.push_back(node);}
+    void add(T&& node) {collection.push_back(std::move(node));}
     
     NodeCollection<T>::iterator find_by_id(ElementID id)
+    {
+        for(auto it = begin(); it < end(); it++)
+        {
+            if(it->get_id() == id)
+                return it;
+        }
+
+        // Element not found
+        throw;
+    }
+
+    NodeCollection<T>::iterator find_by_id(ElementID id) const
     {
         for(auto it = begin(); it < end(); it++)
         {
