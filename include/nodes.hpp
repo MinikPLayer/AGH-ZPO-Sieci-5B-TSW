@@ -14,11 +14,9 @@ protected:
 public:
     virtual void receive_package(Package&& p) {}
     virtual ElementID get_id() {return id;}
+    // do sprawdzenia
+    virtual ReceiverType get_receiver_type(void);
 
-    //poniższy kod wymaga zainkludowania pliku "config.hpp"
-    //#if (defined EXERCISE_ID && EXERCISE_ID != EXERCISE_ID_NODES)
-    //    ReceiverType get_receiver_type(void);
-    //#endif
 };
 
 class ReceiverPreferences
