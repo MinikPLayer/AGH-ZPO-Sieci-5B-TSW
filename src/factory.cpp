@@ -9,24 +9,86 @@ enum class SenderStatus
     Verified
 };
 
+bool has_reachable_storehouse(PackageSender* sender, std::map<PackageSender*, SenderStatus>& statuses)
+{
+    if(statuses[sender] == SenderStatus::Verified)
+        return true;
+
+    statuses[sender] = SenderStatus::Verified;
+
+    if(sender->receiver_preferences_.begin() == sender->receiver_preferences_.end())
+        throw exception();
+
+    bool alo = false;
+    auto prefs = sender->receiver_preferences_;
+
+    for(auto r : prefs.get_preferences())
+    {
+        auto type = r.first->get_receiver_type();
+        if(type == ReceiverType::WORKER)
+        {
+            IPackageReceiver* r_ptr = r.first;
+            auto w_ptr = dynamic_cast<Worker*>(r_ptr);
+            auto s_ptr = dynamic_cast<PackageSender*>(w_ptr);
+            if(s_ptr == sender)
+                continue;
+
+            alo = true;
+            if(statuses[s_ptr] == SenderStatus::NotVisited)
+                has_reachable_storehouse(s_ptr, statuses);
+        }
+    }
+
+    statuses[sender] = SenderStatus::Verified;
+    if(alo)
+        return true;
+    else
+        return false;
+}
+
 bool Factory::is_consistent()
 {
-    throw std::exception();
+    std::map<PackageSender*, SenderStatus> statuses;
+
+    for(auto it = &(*workerCollection.begin()), end = &(*workerCollection.end()); it < end; it++)
+        statuses.insert({it, SenderStatus::NotVisited});
+
+    for(auto it = &(*rampCollection.begin()), end = &(*rampCollection.end()); it < end; it++)
+        statuses.insert({it, SenderStatus::NotVisited});
+
+    try
+    {
+        for(auto it = &(*rampCollection.begin()), end = &(*rampCollection.end()); it < end; it++)
+            if(!has_reachable_storehouse(dynamic_cast<PackageSender*>(it), statuses))
+                return false;
+    }
+    catch(const std::exception& e)
+    {
+        return false;
+    }
+    
+    return true;
 }
 
 void Factory::do_deliveries(Time t)
 {
-    throw std::exception();
+    for(auto i = rampCollection.begin(); i < rampCollection.end(); i++) 
+        i->deliver_goods(t);
 }
 
 void Factory::do_package_passing()
 {
-    throw std::exception();
+    for(auto i = rampCollection.begin(); i < rampCollection.end(); i++) 
+        i->send_package();
+
+    for(auto i = workerCollection.begin(); i < workerCollection.end(); i++) 
+        i->send_package();
 }
 
 void Factory::do_work(Time t)
 {
-    throw std::exception();
+    for(auto i = workerCollection.begin(); i < workerCollection.end(); i++) 
+        i->do_work(t);
 }
 
 #pragma region Add or Remove

@@ -55,12 +55,12 @@ IPackageReceiver* ReceiverPreferences::choose_receiver()
 
 ReceiverPreferences::preferences_t& ReceiverPreferences::get_preferences()
 {
-    throw exception();
+    return preferences;
 }
 
 void PackageSender::push_package(Package&& p)
 {
-    throw exception();  
+    opt_.emplace(std::move(p));
 }
 
 void PackageSender::send_package()
