@@ -1,12 +1,18 @@
 // 5B: Tomecki (408146), Sztefko (407388), Walawski (406822)
 #include "factory.hpp"
 #include <exception>
+#include <stdexcept>
 
 enum class SenderStatus
 {
     NotVisited,
     Visited,
     Verified
+};
+
+class DExcept : public std::logic_error {
+public:
+    DExcept() : std::logic_error("Graph is diconnected") {}
 };
 
 bool has_reachable_storehouse(PackageSender* sender, std::map<PackageSender*, SenderStatus>& statuses)
@@ -17,7 +23,7 @@ bool has_reachable_storehouse(PackageSender* sender, std::map<PackageSender*, Se
     statuses[sender] = SenderStatus::Verified;
 
     if(sender->receiver_preferences_.begin() == sender->receiver_preferences_.end())
-        throw exception();
+        throw DExcept();
 
     bool alo = false;
     auto prefs = sender->receiver_preferences_;
@@ -30,7 +36,7 @@ bool has_reachable_storehouse(PackageSender* sender, std::map<PackageSender*, Se
             IPackageReceiver* r_ptr = r.first;
             auto w_ptr = dynamic_cast<Worker*>(r_ptr);
             auto s_ptr = dynamic_cast<PackageSender*>(w_ptr);
-            if(s_ptr == sender)
+            if(s_ptr == sender || s_ptr == nullptr)
                 continue;
 
             alo = true;
@@ -43,7 +49,7 @@ bool has_reachable_storehouse(PackageSender* sender, std::map<PackageSender*, Se
     if(alo)
         return true;
     else
-        return false;
+        throw DExcept();
 }
 
 bool Factory::is_consistent()
@@ -62,12 +68,12 @@ bool Factory::is_consistent()
             if(!has_reachable_storehouse(dynamic_cast<PackageSender*>(it), statuses))
                 return false;
     }
-    catch(const std::exception& e)
+    catch(const DExcept e)
     {
         return false;
     }
     
-    return true;
+    throw DExcept();
 }
 
 void Factory::do_deliveries(Time t)

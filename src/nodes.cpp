@@ -21,7 +21,7 @@ ReceiverPreferences::ReceiverPreferences()
 
 void ReceiverPreferences::add_receiver(IPackageReceiver* r)
 {
-    preferences.insert(std::pair<IPackageReceiver*,double>(r, 1.0/(preferences.size())));
+    preferences.insert(std::pair<IPackageReceiver*,double>(r, 1.0/double(preferences.size())));
     for(auto i = preferences.begin(); i != preferences.end(); i++)
     {
         i->second = double(1.0/(preferences.size()));
@@ -72,7 +72,7 @@ void PackageSender::send_package()
 
 std::optional<Package>& PackageSender::get_sending_buffer()
 {
-    throw exception();  
+    return opt_;
 }
 
 void Ramp::deliver_goods(Time t)
@@ -101,7 +101,7 @@ void Worker::do_work(Time t)
 }
 
 void Worker::receive_package(Package &&p) {
-    if(get_sending_buffer())
+    if(!get_sending_buffer())
     {
         queue->push(std::move(p));
     }

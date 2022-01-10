@@ -10,8 +10,11 @@ class Package
 public:
     Package();
     Package(ElementID id); 
+    Package(Package&& a) noexcept;
+    Package(const Package&) = default;
 
     bool operator==(const Package& r);
+    Package& operator=(Package&& a);
     ElementID get_id();
 
     ~Package();

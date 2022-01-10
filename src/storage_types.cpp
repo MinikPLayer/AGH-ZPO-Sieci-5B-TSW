@@ -10,7 +10,7 @@ void IPackageStockpile::push(Package&& p)
 
 bool IPackageStockpile::empty()
 {
-    return pile.size() == 0;
+    return pile.empty();
 }
 
 size_t IPackageStockpile::size()
