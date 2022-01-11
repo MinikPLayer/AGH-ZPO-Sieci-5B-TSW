@@ -66,3 +66,8 @@ ElementID Package::get_id()
 {
     return this->id;    
 }
+
+ElementID Package::get_id() const
+{
+    return this->id;    
+}

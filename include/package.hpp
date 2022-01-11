@@ -16,6 +16,7 @@ public:
     bool operator==(const Package& r);
     Package& operator=(Package&& a);
     ElementID get_id();
+    ElementID get_id() const;
 
     ~Package();
 };
