@@ -3,6 +3,9 @@
 #include "test.hpp"
 #include "nodes.hpp"
 #include "package.hpp"
+#include "helpers.hpp"
+#include "factory.hpp"
+#include <fstream>
 
 using namespace std;
 
@@ -30,9 +33,28 @@ void test()
     cout << &(buffer) << endl;
 }
 
+void test_split()
+{
+    std::string t = "Ala ma kota";
+    auto ret = splitString(t, ' ');
+    for(int i = 0;i<ret.size();i++)
+        cout << i << ") " << ret[i] << endl;
+}
+
+void test_io()
+{
+    ifstream f("struct-input.txt");
+    if(!f.good())
+    {
+        cout << "Cannot open test struct file" << endl;
+        return;
+    }
+    Factory factory = load_factory_structure(f);
+}
+
 int main() {
     //utest_all();
-    test();
+    test_io();
 
     int dummy;
     std::cin >> dummy;

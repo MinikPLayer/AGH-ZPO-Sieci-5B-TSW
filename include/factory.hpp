@@ -1,6 +1,7 @@
 // 5B: Tomecki (408146), Sztefko (407388), Walawski (406822)
 #pragma once
 
+#include <fstream>
 #include "nodes.hpp"
 
 template<class T>
@@ -92,3 +93,6 @@ public:
     NodeCollection<Storehouse>::const_iterator storehouse_cbegin();
     NodeCollection<Storehouse>::const_iterator storehouse_cend();
 };
+
+Factory load_factory_structure(std::istream& is);
+void save_factory_structure(Factory& f, std::ostream& os);

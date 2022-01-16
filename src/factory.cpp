@@ -2,6 +2,9 @@
 #include "factory.hpp"
 #include <exception>
 #include <stdexcept>
+#include <string>
+#include <iostream>
+#include <functional>
 
 enum class SenderStatus
 {
@@ -173,4 +176,115 @@ NodeCollection<Storehouse>::const_iterator Factory::storehouse_cbegin()
 NodeCollection<Storehouse>::const_iterator Factory::storehouse_cend()
 {
     return storehouseCollection.end();
+}
+
+struct Argument
+{
+    std::string title;
+    std::string value;
+
+    Argument(std::string t, std::string v) : title(t), value(v) {}
+};
+
+struct LineParser
+{
+private:
+    function<bool(Factory&, vector<Argument>)> parserFunc;
+public:
+
+    std::string tag;
+    int argsCount;
+
+    LineParser(std::string t, int ac, function<bool(Factory&, vector<Argument>)> f) : tag(t), argsCount(ac), parserFunc(f) {}
+    bool Execute(Factory& f, vector<Argument> args)
+    {
+        if(args.size() != argsCount)
+        {
+            std::cout << "Wrong arguments count" << std::endl; 
+            return false;
+        } 
+        return parserFunc(f, args);
+    }
+};
+
+bool ParseRamp(Factory& f, vector<Argument> args)
+{
+    return false;
+}
+
+bool ParseWorker(Factory& f, vector<Argument> args)
+{
+    return false;
+}
+
+bool ParseStorehouse(Factory& f, vector<Argument> args)
+{
+    return false;
+}
+
+bool ParseLink(Factory& f, vector<Argument> args)
+{
+    return false;
+}
+
+std::array<LineParser, 4> parsers = {
+    LineParser("LOADING_RAMP", 2, ParseRamp),
+    LineParser("WORKER", 3, ParseRamp),
+    LineParser("STOREHOUSE", 1, ParseStorehouse),
+    LineParser("LINK", 2, ParseLink),
+};
+
+vector<Argument> GenerateArgs(vector<std::string> parts, int startIndex = 1)
+{
+    vector<Argument> args;
+    for(int i = startIndex;i<parts.size();i++)
+    {
+        auto p = splitString(parts[i], '=');
+        if(p.size() != 2)
+        {
+            std::cout << "Error getting argument from \"" << parts[i] << "\" - wrong split string size" << std::endl;
+            return vector<Argument>();
+        }
+
+        args.push_back(Argument(p[0], p[1]));
+    }
+
+    return args;
+}
+
+bool ParseLine(Factory& f, std::string line, int lineNumber)
+{
+    if(line.size() == 0 || line[0] == ';' || line[0] == '\r' || line[0] == ' ')
+        return true;
+
+    auto data = splitString(line, ' ');
+    std::string tag = data[0];
+    for(int i = 0;i<parsers.size();i++)
+    {
+        if(parsers[i].tag == tag)
+        {
+            auto args = GenerateArgs(data);
+            return parsers[i].Execute(f, args);
+        }
+    }
+
+    std::cout << "Parser not found for line \"" << line << "\"" << endl;
+    return false;
+}
+
+Factory load_factory_structure(std::istream& is)
+{
+    Factory f;
+
+    std::string s = "";
+    for(int i = 0;getline(is, s);i++)
+        if(!ParseLine(f, s, i))
+            std::cout << "Error parsing line at " << i + 1 << std::endl;
+
+    return f;
+}
+
+void save_factory_structure(Factory& f, std::ostream& os)
+{
+    throw exception();
 }

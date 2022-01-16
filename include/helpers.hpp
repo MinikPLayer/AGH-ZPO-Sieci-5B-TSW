@@ -6,6 +6,8 @@
 
 #include <functional>
 #include <random>
+#include <vector>
+#include <string>
 
 #include "types.hpp"
 
@@ -13,6 +15,8 @@ extern std::random_device rd;
 extern std::mt19937 rng;
 
 extern double default_probability_generator();
+
+extern std::vector<std::string> splitString(std::string line, char c);
 
 extern std::function<double()> probability_generator;
 
