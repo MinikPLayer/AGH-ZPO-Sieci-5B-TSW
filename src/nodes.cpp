@@ -3,6 +3,7 @@
 #include <stdexcept>
 
 Worker::Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q)
+    :IPackageReceiver(id)
 {
     PackageSender();
     this->id = id;

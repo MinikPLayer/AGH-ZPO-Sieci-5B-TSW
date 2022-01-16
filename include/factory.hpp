@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include "nodes.hpp"
+#include <iostream>
 
 template<class T>
 class NodeCollection
@@ -33,7 +34,8 @@ public:
         }
 
         // Element not found
-        throw;
+        std::cout << "NodeCollection::find_by_id(): Element with id " << id << " not found" << std::endl;
+        throw exception();
     }
 
     NodeCollection<T>::iterator find_by_id(ElementID id) const
@@ -48,7 +50,7 @@ public:
         }
 
         // Element not found
-        throw;
+        throw exception();
     }
 
     void remove_by_id(ElementID id)

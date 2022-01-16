@@ -37,7 +37,7 @@ void test_split()
 {
     std::string t = "Ala ma kota";
     auto ret = splitString(t, ' ');
-    for(int i = 0;i<ret.size();i++)
+    for(int i = 0;i<(int)ret.size();i++)
         cout << i << ") " << ret[i] << endl;
 }
 

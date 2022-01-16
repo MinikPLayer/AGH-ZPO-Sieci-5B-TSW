@@ -17,13 +17,15 @@ class IPackageReceiver
 {
 protected:
     ElementID id;
+    ReceiverType type;
 public:
     virtual void receive_package(Package&&) {}
     virtual ElementID get_id() {return id;}
     virtual ElementID get_id() const {return id;}
     // do sprawdzenia
-    virtual ReceiverType get_receiver_type(void) {return ReceiverType::WORKER;}
+    virtual ReceiverType get_receiver_type(void) {return type;}
 
+    IPackageReceiver(ElementID id, ReceiverType t = ReceiverType::WORKER) : id(id), type(t) {}
 };
 
 class ReceiverPreferences
@@ -77,8 +79,8 @@ class Storehouse : public IPackageReceiver
 
 public:
     Storehouse(ElementID id, std::unique_ptr<IPackageQueue> d = nullptr)
+        :IPackageReceiver(id)
     {
-        this->id = id;
         if(d == nullptr)
         {
             d = std::make_unique<PackageQueue>(PackageQueueType::FIFO);

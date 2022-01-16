@@ -3,8 +3,10 @@
 #include <exception>
 #include <stdexcept>
 #include <string>
+#include <sstream>
 #include <iostream>
 #include <functional>
+#include <memory>
 
 enum class SenderStatus
 {
@@ -207,29 +209,102 @@ public:
     }
 };
 
+template<class T>
+T S2T(std::string s)
+{
+    std::stringstream ss(s);
+    T n;
+    ss >> n;
+
+    return n;
+}
+
 bool ParseRamp(Factory& f, vector<Argument> args)
 {
-    return false;
+    ElementID id = S2T<ElementID>(args[0].value);
+    TimeOffset deliveryInterval = S2T<TimeOffset>(args[1].value);
+
+    f.add_ramp(Ramp(id, deliveryInterval));
+
+    return true;
 }
 
 bool ParseWorker(Factory& f, vector<Argument> args)
 {
-    return false;
+    ElementID id = S2T<ElementID>(args[0].value);
+    TimeOffset processingTime = S2T<TimeOffset>(args[1].value);
+
+    PackageQueueType type = PackageQueueType::FIFO;
+
+    if(args[2].value == "FIFO")
+    {
+        type = PackageQueueType::FIFO;
+    }
+    else if(args[2].value == "LIFO")
+    {
+        type = PackageQueueType::LIFO;
+    }
+    else
+    {
+        std::cout << "Unknown queue type" << std::endl;
+        return false;
+    }
+
+    f.add_worker(Worker(id, processingTime, std::make_unique<PackageQueue>(type)));
+
+    return true;
 }
 
 bool ParseStorehouse(Factory& f, vector<Argument> args)
 {
-    return false;
+    ElementID id = S2T<ElementID>(args[0].value);
+
+    f.add_storehouse(Storehouse(id));
+
+    return true;
 }
 
 bool ParseLink(Factory& f, vector<Argument> args)
 {
-    return false;
+    std::string src = args[0].value;
+    std::string dest = args[1].value;
+
+    vector<std::string> srcSplitted = splitString(src, '-');
+    vector<std::string> destSplitted = splitString(dest, '-');
+
+    PackageSender* srcObject = nullptr;
+    IPackageReceiver* destObject = nullptr;
+
+    ElementID srcId = S2T<ElementID>(srcSplitted[1]);
+    ElementID destId = S2T<ElementID>(destSplitted[1]);
+    if(srcSplitted[0] == "ramp")
+        srcObject = &*f.find_ramp_by_id(srcId);
+    else if(srcSplitted[0] == "worker")
+        srcObject = &*f.find_worker_by_id(srcId);
+    else 
+    {
+        std::cout << "Unknown source object type" << std::endl;
+        return false;
+    }
+
+    if(destSplitted[0] == "worker")
+        destObject = &*f.find_worker_by_id(destId);
+    else if(destSplitted[0] == "store")
+        destObject = &*f.find_storehouse_by_id(destId);
+    else 
+    {
+        std::cout << "Unknown destination object type" << std::endl;
+        return false;
+    }
+
+    srcObject->receiver_preferences_.add_receiver(destObject);
+
+    return true;
 }
 
 std::array<LineParser, 4> parsers = {
     LineParser("LOADING_RAMP", 2, ParseRamp),
-    LineParser("WORKER", 3, ParseRamp),
+    LineParser("WORKER", 3, ParseWorker),
     LineParser("STOREHOUSE", 1, ParseStorehouse),
     LineParser("LINK", 2, ParseLink),
 };
@@ -254,7 +329,9 @@ vector<Argument> GenerateArgs(vector<std::string> parts, int startIndex = 1)
 
 bool ParseLine(Factory& f, std::string line, int lineNumber)
 {
-    if(line.size() == 0 || line[0] == ';' || line[0] == '\r' || line[0] == ' ')
+    line = removeWhitespaces(line);
+
+    if(line.size() == 0 || line[0] == ';' || line[0] == ' ')
         return true;
 
     auto data = splitString(line, ' ');
@@ -278,8 +355,19 @@ Factory load_factory_structure(std::istream& is)
 
     std::string s = "";
     for(int i = 0;getline(is, s);i++)
-        if(!ParseLine(f, s, i))
-            std::cout << "Error parsing line at " << i + 1 << std::endl;
+    {
+        try
+        {     
+            if(!ParseLine(f, s, i))
+                std::cout << "Error parsing line at " << i + 1 << std::endl;
+        }
+        catch(const std::exception& e)
+        {
+            std::cout << "Exception thrown while parsing file at line " << i + 1 << std::endl;
+        }
+
+    }
+
 
     return f;
 }
