@@ -154,6 +154,7 @@ NodeCollection<Worker>::const_iterator Factory::worker_cend()
     return workerCollection.end();
 }
 
+
 // Storehouse
 void Factory::add_storehouse(Storehouse&& s)
 {
@@ -195,9 +196,9 @@ private:
 public:
 
     std::string tag;
-    int argsCount;
+    size_t argsCount;
 
-    LineParser(std::string t, int ac, function<bool(Factory&, vector<Argument>)> f) : tag(t), argsCount(ac), parserFunc(f) {}
+    LineParser(std::string t, size_t ac, function<bool(Factory&, vector<Argument>)> f) : parserFunc(f), tag(t), argsCount(ac) {}
     bool Execute(Factory& f, vector<Argument> args)
     {
         if(args.size() != argsCount)
@@ -312,7 +313,7 @@ std::array<LineParser, 4> parsers = {
 vector<Argument> GenerateArgs(vector<std::string> parts, int startIndex = 1)
 {
     vector<Argument> args;
-    for(int i = startIndex;i<parts.size();i++)
+    for(size_t i = startIndex;i<parts.size();i++)
     {
         auto p = splitString(parts[i], '=');
         if(p.size() != 2)
@@ -327,7 +328,7 @@ vector<Argument> GenerateArgs(vector<std::string> parts, int startIndex = 1)
     return args;
 }
 
-bool ParseLine(Factory& f, std::string line, int lineNumber)
+bool ParseLine(Factory& f, std::string line)
 {
     line = removeWhitespaces(line);
 
@@ -336,7 +337,7 @@ bool ParseLine(Factory& f, std::string line, int lineNumber)
 
     auto data = splitString(line, ' ');
     std::string tag = data[0];
-    for(int i = 0;i<parsers.size();i++)
+    for(size_t i = 0;i<parsers.size();i++)
     {
         if(parsers[i].tag == tag)
         {
@@ -358,7 +359,7 @@ Factory load_factory_structure(std::istream& is)
     {
         try
         {     
-            if(!ParseLine(f, s, i))
+            if(!ParseLine(f, s))
                 std::cout << "Error parsing line at " << i + 1 << std::endl;
         }
         catch(const std::exception& e)
@@ -368,11 +369,78 @@ Factory load_factory_structure(std::istream& is)
 
     }
 
-
     return f;
+}
+
+void printReceivers(PackageSender r, std::ostream& os)
+{
+    os << "  Receivers:" << std::endl;
+    auto prefs = r.receiver_preferences_.get_preferences();
+    for(auto j = prefs.begin();j != prefs.end();j++)
+    {
+        auto el = (*j).first;
+        auto type = el->get_receiver_type();
+        string typeStr = "";
+        switch (type)
+        {
+            case ReceiverType::WORKER:
+                typeStr = "worker";
+                break;
+
+            case ReceiverType::STOREHOUSE:
+                typeStr = "storehouse";
+                break;
+            
+            default:
+                std::cout << "Unknown receiver type" << endl;
+                return;
+        }
+
+        os << "    " << typeStr << " #" << el->get_id() << std::endl;
+    }
 }
 
 void save_factory_structure(Factory& f, std::ostream& os)
 {
-    throw exception();
+    os << std::endl << "== LOADING RAMPS ==" << std::endl << std::endl;
+    for(auto i = f.ramp_cbegin();i < f.ramp_cend();i++)
+    {
+        auto ramp = *i;
+        os << "LOADING RAMP #" << ramp.get_id() << std::endl;
+        os << "  Delivery interval: " << ramp.get_delivery_interval() << std::endl;
+
+        printReceivers(ramp, os);
+
+        os << std::endl;
+    }
+
+    os << std::endl << "== WORKERS ==" << std::endl << std::endl;
+    for(auto i = f.worker_cbegin(); i < f.worker_cend(); i++)
+    {
+        os << "WORKER #" << i->get_id() << std::endl;
+        os << "  Processing time: " << i->get_processing_duration() << std::endl;
+        os << "  Queue type: ";
+        std::string typeStr = "";
+        auto recType = i->getQueueType();
+        switch(recType)
+        {
+            case PackageQueueType::FIFO:
+                typeStr = "FIFO";
+                break;
+            case PackageQueueType::LIFO:
+                typeStr = "LIFO";
+                break;
+            default:
+                std::cout << "Unknown package queue type" << std::endl;
+                return;
+        }
+        os << typeStr << std::endl;
+
+        printReceivers(*i, os);
+        os << std::endl;
+    }
+
+    os << std::endl << "== STOREHOUSES  ==" << std::endl << std::endl;
+    for(auto i = f.storehouse_cbegin(); i < f.storehouse_cend(); i++)
+        os << "STOREHOUSE #" << i->get_id() << std::endl;
 }

@@ -32,7 +32,7 @@ std::array<char, 2> whitespaceChars = {'\r', '\0'};
 std::string removeWhitespaces(std::string data)
 {
    for(size_t i = 0;i<data.size();i++)
-      for(int j = 0;j<whitespaceChars.size();j++)
+      for(size_t j = 0;j<whitespaceChars.size();j++)
          if(data[i] == whitespaceChars[j])
          {
             data.erase(i--);

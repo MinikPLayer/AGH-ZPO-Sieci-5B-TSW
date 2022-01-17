@@ -22,6 +22,12 @@ protected:
     container_t pile;
 
 public:
+    const_iterator cbegin() const {return pile.cbegin();}
+    const_iterator cend() const {return pile.cend();}
+
+    iterator begin() {return pile.begin();}
+    iterator end() {return pile.end();}
+
     void push(Package&& p);
     bool empty();
     size_t size();

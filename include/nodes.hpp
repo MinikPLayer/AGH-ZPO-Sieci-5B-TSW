@@ -23,9 +23,11 @@ public:
     virtual ElementID get_id() {return id;}
     virtual ElementID get_id() const {return id;}
     // do sprawdzenia
-    virtual ReceiverType get_receiver_type(void) {return type;}
+    virtual ReceiverType get_receiver_type(void) const {return type;}
 
-    IPackageReceiver(ElementID id, ReceiverType t = ReceiverType::WORKER) : id(id), type(t) {}
+    IPackageReceiver(ElementID id, ReceiverType t) : id(id), type(t) {}
+    IPackageReceiver(ElementID id) :id(id), type(ReceiverType::WORKER) {}
+    IPackageReceiver() :id(0), type(ReceiverType::WORKER) {}
 };
 
 class ReceiverPreferences
@@ -77,9 +79,17 @@ class Storehouse : public IPackageReceiver
 {
     std::unique_ptr<IPackageQueue> queue;
 
+    using iterator = IPackageQueue::iterator;
+    using const_iterator = IPackageQueue::const_iterator;
 public:
+    const_iterator cbegin() const {return queue->cbegin();}
+    const_iterator cend() const {return queue->cend();}
+
+    const_iterator begin() {return queue->begin();}
+    const_iterator end() {return queue->end();}
+
     Storehouse(ElementID id, std::unique_ptr<IPackageQueue> d = nullptr)
-        :IPackageReceiver(id)
+        :IPackageReceiver(id, ReceiverType::STOREHOUSE)
     {
         if(d == nullptr)
         {
@@ -111,12 +121,23 @@ class Worker : public PackageSender, public IPackageReceiver
     Time start_time;
     std::unique_ptr<IPackageQueue> queue;
     std::optional<Package> cur_package;
+
+    using iterator = IPackageQueue::iterator;
+    using const_iterator = IPackageQueue::const_iterator;
 public:
     Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q);
+
+    const_iterator cbegin() const {return queue->cbegin();}
+    const_iterator cend() const {return queue->cend();}
+
+    iterator begin() {return queue->begin();}
+    iterator end() {return queue->end();}
 
     void receive_package(Package &&p) override;
 
     void do_work(Time t);
-    TimeOffset get_processing_duration(void);
+    TimeOffset get_processing_duration(void) const;
     Time get_package_processing_start_time(void);
+
+    PackageQueueType getQueueType() const {return queue->get_queue_type();}
 };

@@ -5,6 +5,9 @@
 #include "package.hpp"
 #include "helpers.hpp"
 #include "factory.hpp"
+#include "simulation.hpp"
+#include "reports.hpp"
+#include <set>
 #include <fstream>
 
 using namespace std;
@@ -41,20 +44,46 @@ void test_split()
         cout << i << ") " << ret[i] << endl;
 }
 
-void test_io()
+Factory test_io(bool output = true)
 {
     ifstream f("struct-input.txt");
     if(!f.good())
     {
         cout << "Cannot open test struct file" << endl;
-        return;
+        return Factory();
     }
     Factory factory = load_factory_structure(f);
+
+    ofstream fout("struct-gen.txt");
+    if(!fout.good())
+    {
+        cout << "Cannot open output struct file for writing" << endl;
+        return Factory();
+    }
+    //save_factory_structure(factory, fout);
+    //fout.close();
+    if(output)
+        save_factory_structure(factory, cout);
+
+    return factory;
+}
+
+void test_sim()
+{
+    auto factory = test_io(false);
+    SpecificTurnsReportNotifier spec_notifier(std::set<Time>{1});
+    simulate(factory, 10, [&spec_notifier](Factory& f, TimeOffset t_offset) {
+        if (spec_notifier.should_generate_report(t_offset)) {
+            generate_structure_report(f, std::cout);
+        }
+    });
+    
 }
 
 int main() {
     //utest_all();
-    test_io();
+    //test_io();
+    test_sim();
 
     int dummy;
     std::cin >> dummy;

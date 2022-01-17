@@ -23,9 +23,9 @@ PackageQueueType IPackageQueue::get_queue_type()
     return this->type;
 }
 
-PackageQueue::PackageQueue(PackageQueueType type)
+PackageQueue::PackageQueue(PackageQueueType t)
 {
-    this->type = type;
+    this->type = t;
 }
 
 Package PackageQueue::pop()

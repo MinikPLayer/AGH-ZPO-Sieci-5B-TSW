@@ -1,9 +1,10 @@
 // 5B: Tomecki (408146), Sztefko (407388), Walawski (406822)
 #include "nodes.hpp"
 #include <stdexcept>
+#include <iostream>
 
 Worker::Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q)
-    :IPackageReceiver(id)
+    :IPackageReceiver(id, ReceiverType::WORKER)
 {
     PackageSender();
     this->id = id;
@@ -113,7 +114,7 @@ void Worker::receive_package(Package &&p) {
     }
 }
 
-TimeOffset Worker::get_processing_duration()
+TimeOffset Worker::get_processing_duration() const
 {
     return offset;
 }
