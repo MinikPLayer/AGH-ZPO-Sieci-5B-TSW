@@ -136,6 +136,19 @@ void Factory::add_worker(Worker&& w)
 
 void Factory::remove_worker(ElementID id)
 {
+    //workerCollection.remove_by_id(id);
+    for(auto it = rampCollection.begin(); it < rampCollection.end(); it++)
+    {
+        auto prefs = it->receiver_preferences_.get_preferences();
+        for(auto el = prefs.begin(); el != prefs.end(); el++)
+        {
+            if(el->first->get_id() == id)
+            {
+                it->receiver_preferences_.remove_receiver(&*(el->first));
+                break;
+            }
+        }
+    }
     workerCollection.remove_by_id(id);
 }
 
@@ -440,7 +453,7 @@ void save_factory_structure(Factory& f, std::ostream& os)
         os << std::endl;
     }
 
-    os << std::endl << "== STOREHOUSES  ==" << std::endl << std::endl;
+    os << std::endl << "== STOREHOUSES ==" << std::endl << std::endl;
     for(auto i = f.storehouse_cbegin(); i < f.storehouse_cend(); i++)
-        os << "STOREHOUSE #" << i->get_id() << std::endl;
+        os << "STOREHOUSE #" << i->get_id() << std::endl << std::endl;
 }

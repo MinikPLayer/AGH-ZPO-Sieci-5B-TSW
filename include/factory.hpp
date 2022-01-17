@@ -35,7 +35,7 @@ public:
 
         // Element not found
         std::cout << "NodeCollection::find_by_id(): Element with id " << id << " not found" << std::endl;
-        throw exception();
+        return end();
     }
 
     NodeCollection<T>::iterator find_by_id(ElementID id) const
@@ -50,13 +50,21 @@ public:
         }
 
         // Element not found
-        throw exception();
+        std::cout << "NodeCollection::find_by_id(): Element with id " << id << " not found" << std::endl;
+        return end();
+    }
+
+    void remove_by_iter(iterator it)
+    {
+        if(it != end())
+            collection.erase(it);
     }
 
     void remove_by_id(ElementID id)
     {
         auto it = find_by_id(id);
-        collection.erase(it);
+        if(it != end())
+            collection.erase(it);
     }
 };
 
