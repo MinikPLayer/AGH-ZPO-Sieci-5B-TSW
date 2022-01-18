@@ -1,5 +1,6 @@
 // 5B: Tomecki (408146), Sztefko (407388), Walawski (406822)
 #include "factory.hpp"
+#include "nodes.hpp"
 #include <exception>
 #include <stdexcept>
 #include <string>
@@ -385,75 +386,92 @@ Factory load_factory_structure(std::istream& is)
     return f;
 }
 
-void printReceivers(PackageSender r, std::ostream& os)
+void save_factory_structure(Factory& fact, std::ostream& os)
 {
-    os << "  Receivers:" << std::endl;
-    auto prefs = r.receiver_preferences_.get_preferences();
-    for(auto j = prefs.begin();j != prefs.end();j++)
-    {
-        auto el = (*j).first;
-        auto type = el->get_receiver_type();
-        string typeStr = "";
-        switch (type)
-        {
-            case ReceiverType::WORKER:
-                typeStr = "worker";
-                break;
+    Factory& f = (Factory&)fact;
 
-            case ReceiverType::STOREHOUSE:
-                typeStr = "storehouse";
-                break;
-            
-            default:
-                std::cout << "Unknown receiver type" << endl;
-                return;
-        }
-
-        os << "    " << typeStr << " #" << el->get_id() << std::endl;
-    }
-}
-
-void save_factory_structure(Factory& f, std::ostream& os)
-{
-    os << std::endl << "== LOADING RAMPS ==" << std::endl << std::endl;
+    os << std::endl << "; == LOADING RAMPS ==" << std::endl << std::endl;
     for(auto i = f.ramp_cbegin();i < f.ramp_cend();i++)
     {
-        auto ramp = *i;
-        os << "LOADING RAMP #" << ramp.get_id() << std::endl;
-        os << "  Delivery interval: " << ramp.get_delivery_interval() << std::endl;
-
-        printReceivers(ramp, os);
-
-        os << std::endl;
+        os << "LOADING_RAMP id=" << i->get_id() << " delivery-interval=" << i->get_delivery_interval() << std::endl;
     }
 
-    os << std::endl << "== WORKERS ==" << std::endl << std::endl;
+    os << std::endl << "; == WORKERS ==" << std::endl << std::endl;
     for(auto i = f.worker_cbegin(); i < f.worker_cend(); i++)
     {
-        os << "WORKER #" << i->get_id() << std::endl;
-        os << "  Processing time: " << i->get_processing_duration() << std::endl;
-        os << "  Queue type: ";
-        std::string typeStr = "";
-        auto recType = i->getQueueType();
-        switch(recType)
+        os << "WORKER id=" << i->get_id() << " processing-time=" << i->get_processing_duration() << " queue-type=";
+        switch(i->get_queue()->get_queue_type())
         {
             case PackageQueueType::FIFO:
-                typeStr = "FIFO";
+                os << "FIFO" << std::endl;
                 break;
-            case PackageQueueType::LIFO:
-                typeStr = "LIFO";
-                break;
-            default:
-                std::cout << "Unknown package queue type" << std::endl;
-                return;
-        }
-        os << typeStr << std::endl;
 
-        printReceivers(*i, os);
-        os << std::endl;
+            case PackageQueueType::LIFO:
+                os << "LIFO" << std::endl;
+                break;
+        }
     }
 
-    os << std::endl << "== STOREHOUSES ==" << std::endl << std::endl;
+    os << std::endl << "; == STOREHOUSES ==" << std::endl << std::endl;
     for(auto i = f.storehouse_cbegin(); i < f.storehouse_cend(); i++)
-        os << "STOREHOUSE #" << i->get_id() << std::endl << std::endl;
+    {
+        os << "STOREHOUSE id=" << i->get_id() << std::endl;
+    }
+
+    os << std::endl << "; == LINKS ==" << std::endl << std::endl;
+
+
+    for(auto it = f.ramp_cbegin(); it < f.ramp_cend(); it++)
+    {
+        bool ok = false;
+        auto prefs = it->receiver_preferences_.get_preferences();
+        for(auto el = prefs.begin(); el != prefs.end(); el++)
+        {
+            ok = true;
+            os << "LINK src=ramp-" << it->get_id() << " dest=";
+            std::string typeStr = "";
+            switch(el->first->get_receiver_type())
+            {
+                case ReceiverType::STOREHOUSE:
+                    typeStr = "store";
+                    break;
+
+                case ReceiverType::WORKER:
+                    typeStr = "worker";
+                    break;
+            }
+
+            os << typeStr << "-" << el->first->get_id() << std::endl;
+        }
+
+        if(ok)
+            os << std::endl;
+    }
+
+    for(auto it = f.worker_cbegin(); it < f.worker_cend(); it++)
+    {
+        bool ok = false;
+        auto prefs = it->receiver_preferences_.get_preferences();
+        for(auto el = prefs.begin(); el != prefs.end(); el++)
+        {
+            ok = true;
+            os << "LINK src=worker-" << it->get_id() << " dest=";
+            std::string typeStr = "";
+            switch(el->first->get_receiver_type())
+            {
+                case ReceiverType::STOREHOUSE:
+                    typeStr = "store";
+                    break;
+
+                case ReceiverType::WORKER:
+                    typeStr = "worker";
+                    break;
+            }
+
+            os << typeStr << "-" << el->first->get_id() << std::endl;
+        }
+
+        if(ok)
+            os << std::endl;
+    }
 }
