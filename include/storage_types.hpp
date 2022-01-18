@@ -39,7 +39,7 @@ protected:
     PackageQueueType type;
 public:
     virtual Package pop() = 0;
-    PackageQueueType get_queue_type();
+    PackageQueueType get_queue_type() const;
 };
 
 class PackageQueue : public IPackageQueue

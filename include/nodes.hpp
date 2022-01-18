@@ -46,7 +46,7 @@ public:
     void add_receiver(IPackageReceiver* r);
     void remove_receiver(IPackageReceiver* r);
     IPackageReceiver* choose_receiver(void);
-    preferences_t& get_preferences(void);
+    preferences_t get_preferences() const;
 
     iterator begin() { return preferences.begin(); }
     iterator end() { return preferences.end(); }
@@ -110,7 +110,7 @@ public:
     Ramp(ElementID id, TimeOffset di) : id(id), offset(di), d_t(0) {}
 
     void deliver_goods(Time t);
-    TimeOffset get_delivery_interval() {return offset;}
+    TimeOffset get_delivery_interval() const {return offset;}
 
     ElementID get_id() const {return id;}
 };
@@ -134,6 +134,8 @@ public:
     iterator end() {return queue->end();}
 
     void receive_package(Package &&p) override;
+
+    IPackageQueue* get_queue() const {return &*queue;}
 
     void do_work(Time t);
     TimeOffset get_processing_duration(void) const;

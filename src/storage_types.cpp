@@ -18,7 +18,7 @@ size_t IPackageStockpile::size()
     return pile.size();
 }
 
-PackageQueueType IPackageQueue::get_queue_type()
+PackageQueueType IPackageQueue::get_queue_type() const
 {
     return this->type;
 }

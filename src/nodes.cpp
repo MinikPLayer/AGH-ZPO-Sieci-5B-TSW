@@ -55,7 +55,7 @@ IPackageReceiver* ReceiverPreferences::choose_receiver()
     throw std::invalid_argument("reached end of function choose_receiver: probably empty list");
 }
 
-ReceiverPreferences::preferences_t& ReceiverPreferences::get_preferences()
+ReceiverPreferences::preferences_t ReceiverPreferences::get_preferences() const
 {
     return preferences;
 }
